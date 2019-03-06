@@ -1,0 +1,21 @@
+{
+    "name": "firstw/php-extension-export",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "adam",
+            "email": "adam.wu@shein.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+
+    },
+    "autoload": {
+        "psr-4": {
+            "FirstW\\Export\\": "./src/"
+        }
+    },
+    "description": ""
+}
