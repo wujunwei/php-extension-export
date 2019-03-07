@@ -14,6 +14,10 @@ class FunctionLoader extends Loader
     const FILE_NAME = '/functions.php';
 
     private $function_template = <<<tem
+/**
+ * 
+ * @return %s
+ */
 function %s(%s){}
 tem;
     /**
@@ -49,24 +53,59 @@ tem;
         }else{
             foreach ($this->functions as  $function){
                 $param = $this->handleParameters($function->getParameters());
-                fwrite($handle,$this->writeLine($function->getNamespaceName(), $param));
+                $returnType = $function->getReturnType() ?: 'mix';
+                fwrite($handle,$this->writeLine($returnType, $function->getName(), $param));
             }
         }
 
         return fclose($handle);
     }
 
-    private function writeLine($name, $value)
+    private function writeLine()
     {
-        return sprintf($this->function_template, $name,$value);
+        $args = func_get_args();
+        return sprintf($this->function_template, ...$args);
     }
 
     /**
-     * @param \ReflectionParameter[] $reflection
+     * @param \ReflectionParameter[] $reflections
      * @return string
      */
-    private function handleParameters($reflection = [])
-    {//todo
-        return ;
+    private function handleParameters($reflections = [])
+    {
+        $result = '';
+        foreach ($reflections as $reflection){
+            $result .= $this->__handleParameter($reflection).', ';
+        }
+        return rtrim($result, ', ');
+    }
+
+    /**
+     * @param \ReflectionParameter $reflection
+     * @return string
+     */
+    private function __handleParameter(\ReflectionParameter $reflection)
+    {
+
+        if ($reflection->isVariadic()){
+            return '...'.$reflection->getName();
+        }
+        if ($reflection->hasType()){
+            $result = $reflection->hasType().' ';
+        }else if (!is_null($reflection->getClass())){
+            $result = $reflection->getClass()->getName().' ';
+        }else{
+            $result = '';
+        }
+
+        if ($reflection->isPassedByReference()){
+            $result .= '&';
+        }
+        $result .= $reflection->getName();
+
+        if ($reflection->isOptional() && $reflection->isDefaultValueAvailable()){
+            $result .= '='.$reflection->getDefaultValue();
+        }
+        return $result;
     }
 }

@@ -9,7 +9,7 @@
 require "../vendor/autoload.php";
 
 try {
-    FirstW\Export\Extension::dump('pdo', './pdo');
+    FirstW\Export\Extension::dump('dom', './pdo');
 } catch (Exception $e) {
     echo 'fail:'.$e->getMessage();
 }

@@ -43,7 +43,12 @@ class ConstLoader extends Loader
 
     private function writeLine($name, $value)
     {
-        return sprintf("define(\"%s\", \"%s\");\r\n", $name, $value);
+        if(is_string($value)){
+            return sprintf("define(\"%s\", \"%s\");\r\n", $name, $value);
+        }else{
+            return sprintf("define(\"%s\", %s);\r\n", $name, $value);
+        }
+
     }
 
 }
