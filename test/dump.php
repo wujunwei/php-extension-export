@@ -9,7 +9,7 @@
 require "../vendor/autoload.php";
 
 try {
-    FirstW\Export\Extension::dump('dom', './pdo');
+    FirstW\Export\Extension::dump('mongodb', './pdo/');
 } catch (Exception $e) {
     echo 'fail:'.$e->getMessage();
 }

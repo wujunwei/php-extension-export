@@ -11,7 +11,7 @@ namespace FirstW\Export;
 
 class ConstLoader extends Loader
 {
-    const FILE_NAME = '/const.php';
+    const FILE_NAME = 'const.php';
     private $constArray;
     public function __construct($constArray)
     {

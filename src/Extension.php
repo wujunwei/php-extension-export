@@ -35,5 +35,14 @@ class Extension
 
         //functions
         (new FunctionLoader($extension->getFunctions()))->dump($path);
+
+        $classes = $extension->getClasses() ;
+        foreach ($classes as $class){
+            if ($class->isInterface()){
+                (new InterfaceLoader($class))->dump($path);
+            }else{
+                (new ClassLoader($class))->dump($path);
+            }
+        }
     }
 }

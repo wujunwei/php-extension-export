@@ -12,8 +12,8 @@ namespace FirstW\Export\Inner;
 interface ClassLoaderInterface
 {
     /**
+     * @param \ReflectionClass $reflectionClass
      * @return string
      */
-    public function dump();
-    public function writeLine();
+    static public function dump(\ReflectionClass $reflectionClass);
 }

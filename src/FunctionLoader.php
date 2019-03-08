@@ -11,14 +11,16 @@ namespace FirstW\Export;
 
 class FunctionLoader extends Loader
 {
-    const FILE_NAME = '/functions.php';
-
+    const FILE_NAME = 'functions.php';
+    private $lastNamespace = '';
     private $function_template = <<<tem
+
 /**
- * 
+ * %s
  * @return %s
  */
 function %s(%s){}
+
 tem;
     /**
      * @var array|\ReflectionFunction[]
@@ -52,13 +54,34 @@ tem;
             fwrite($handle, '// no functions');
         }else{
             foreach ($this->functions as  $function){
+                fwrite($handle, $this->handleNamespace($function));
+                $doc = $this->handleDoc($function->getParameters());
                 $param = $this->handleParameters($function->getParameters());
-                $returnType = $function->getReturnType() ?: 'mix';
-                fwrite($handle,$this->writeLine($returnType, $function->getName(), $param));
+                $returnType = $function->getReturnType() ?: 'mixed';
+                fwrite($handle,$this->writeLine($doc, $returnType, $function->getShortName(), $param));
             }
         }
 
         return fclose($handle);
+    }
+
+    /**
+     * @param \ReflectionFunction $function
+     * @return string
+     */
+    private function handleNamespace(\ReflectionFunction $function)
+    {
+        $namespace = $function->getNamespaceName();
+        if ($namespace !== ''){
+            if ($this->lastNamespace != $namespace){
+                $this->lastNamespace = $namespace;
+                return "\nnamespace {$namespace};\n";
+            }else{
+                return "";
+            }
+        }else{
+            return $namespace;
+        }
     }
 
     private function writeLine()
@@ -70,6 +93,7 @@ tem;
     /**
      * @param \ReflectionParameter[] $reflections
      * @return string
+     * @throws \ReflectionException
      */
     private function handleParameters($reflections = [])
     {
@@ -83,17 +107,21 @@ tem;
     /**
      * @param \ReflectionParameter $reflection
      * @return string
+     * @throws \ReflectionException
      */
     private function __handleParameter(\ReflectionParameter $reflection)
     {
 
         if ($reflection->isVariadic()){
-            return '...'.$reflection->getName();
+            return '...$'.$reflection->getName();
         }
         if ($reflection->hasType()){
-            $result = $reflection->hasType().' ';
-        }else if (!is_null($reflection->getClass())){
-            $result = $reflection->getClass()->getName().' ';
+           $type = $reflection->getType();
+           if ($type->isBuiltin() || $reflection->getClass()=== null){
+               $result = $type.' ';
+           }else {
+               $result = '\\'.$reflection->getClass()->getName().' ';
+           }
         }else{
             $result = '';
         }
@@ -101,11 +129,44 @@ tem;
         if ($reflection->isPassedByReference()){
             $result .= '&';
         }
-        $result .= $reflection->getName();
+        $result .= '$'.$reflection->getName();
 
         if ($reflection->isOptional() && $reflection->isDefaultValueAvailable()){
-            $result .= '='.$reflection->getDefaultValue();
+            $value = $reflection->getDefaultValue();
+            if (is_string($value)){
+                $result .= "='{$value}'";
+            }else{
+                $result .= "={$value}";
+            }
+
         }
         return $result;
+    }
+
+    /**
+     * @param \ReflectionParameter[] $parameters
+     * @return string
+     */
+    private function handleDoc(array $parameters)
+    {
+        if (count($parameters) === 0){
+            return '';
+        }
+        $result = '';
+        foreach ($parameters as $reflection){
+            $result .='@param ';
+            if ($reflection->hasType()){
+                $type = $reflection->getType();
+                if ($type->isBuiltin() || $reflection->getClass()=== null){
+                    $result .= $type.' ';
+                }else {
+                    $result .= '\\'.$reflection->getClass()->getName().' ';
+                }
+            }else{
+                $result .= '';
+            }
+            $result .= '$'.$reflection->getName()."\n * ";
+        }
+        return rtrim($result, "\n* ");
     }
 }

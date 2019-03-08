@@ -12,4 +12,18 @@ namespace FirstW\Export;
 class InterfaceLoader
 {
 
+    /**
+     * @var \ReflectionClass
+     */
+    private $reflectionClass;
+
+    public function __construct(\ReflectionClass $reflectionClass)
+    {
+        $this->reflectionClass = $reflectionClass;
+    }
+
+    public function dump(string $path)
+    {
+        //todo;
+    }
 }
