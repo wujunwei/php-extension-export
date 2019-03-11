@@ -27,6 +27,6 @@ class PropertyLoader implements ClassLoaderInterface
             $result .= '$'.$property->getName().";\n    ";
         }
 
-        return trim($result, ' ');
+        return rtrim($result, ' ');
     }
 }

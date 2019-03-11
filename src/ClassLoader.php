@@ -72,7 +72,7 @@ tem;
         $result = '';
         $subClass = $this->reflectionClass->getParentClass();
         if ($subClass !== false){
-            $result .= ' extends \\'.$subClass->getParentClass()->getName();
+            $result .= ' extends \\'.$subClass->getName();
         }
         if (count($inters) > 0){
             $result .= ' implements ';

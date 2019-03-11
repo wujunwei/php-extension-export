@@ -30,6 +30,9 @@ tem;
     {
         $result = '';
         foreach ($reflectionClass->getMethods() as  $function){
+            if ($function->getDeclaringClass()->getName() !== $reflectionClass->getName()){
+                continue;
+            }
             $doc = self::handleDoc($function->getParameters());
             $param = self::handleParameters($function->getParameters());
             $returnType = $function->getReturnType() ?: 'mixed';
@@ -122,8 +125,12 @@ tem;
     static private function handleVisible(\ReflectionMethod $method)
     {
         $result = '';
+
         if ($method->isStatic()){
             $result .= 'static ';
+        }
+        if($method->isFinal()){
+            $result .= 'final ';
         }
         $result .= $method->isPublic() ? 'public ': ($method->isProtected() ? 'protected ': 'private ');
         return $result;
