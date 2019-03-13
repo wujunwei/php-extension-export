@@ -46,6 +46,9 @@ class ConstLoader extends Loader
         if(is_string($value)){
             return sprintf("define(\"%s\", \"%s\");\r\n", $name, $value);
         }else{
+            if (is_bool($value)){
+                $value = $value? 'true': 'false';
+            }
             return sprintf("define(\"%s\", %s);\r\n", $name, $value);
         }
 

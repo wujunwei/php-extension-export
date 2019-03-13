@@ -68,7 +68,13 @@ tem;
 
     protected function handleDependency()
     {
+        $interfaces = $this->reflectionClass->getInterfaces();
         $inters = $this->reflectionClass->getInterfaceNames();
+        $parentInterfaces = [];
+        foreach ($interfaces as $interface){
+            $parentInterfaces = $parentInterfaces + $this->getAllInterface($interface);
+        }
+        $inters = array_diff($inters, $parentInterfaces);
         $result = '';
         $subClass = $this->reflectionClass->getParentClass();
         if ($subClass !== false){
@@ -81,6 +87,24 @@ tem;
             }
         }
        return rtrim($result, ', ');
+    }
+
+    /**
+     * @param \ReflectionClass $reflectionClass
+     * @return string[]
+     */
+    private function getAllInterface(\ReflectionClass $reflectionClass)
+    {
+        $parent = $reflectionClass->getInterfaces();
+        if (count($parent) === 0){
+            return [$reflectionClass->getName()];
+        }else{
+            $result = [];
+            foreach ($parent as $item) {
+                $result += $this->getAllInterface($item);
+            }
+        }
+        return $result;
     }
 
     protected function handleTrait()
