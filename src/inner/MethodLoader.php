@@ -21,6 +21,16 @@ class MethodLoader implements ClassLoaderInterface
 
 tem;
 
+    static private $InterfaceMethodTemplate = <<<tem
+
+    /**
+     * %s
+     * @return %s
+     */
+    %s function %s(%s);
+
+tem;
+
     /**
      * @param \ReflectionClass $reflectionClass
      * @return string
@@ -36,7 +46,12 @@ tem;
             $doc = self::handleDoc($function->getParameters());
             $param = self::handleParameters($function->getParameters());
             $returnType = $function->getReturnType() ?: 'mixed';
-            $result .= sprintf(self::$methodTemplate, $doc, $returnType, self::handleVisible($function), $function->getShortName(), $param);
+            if ($reflectionClass->isInterface()){
+                $result .= sprintf(self::$InterfaceMethodTemplate, $doc, $returnType, self::handleVisible($function), $function->getShortName(), $param);
+            }else{
+                $result .= sprintf(self::$methodTemplate, $doc, $returnType, self::handleVisible($function), $function->getShortName(), $param);
+            }
+
         }
 
         return $result;

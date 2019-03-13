@@ -19,9 +19,7 @@ class ClassLoader extends Loader
     private $class_template = <<<tem
 class %s %s
 {
-%s
-%s
-%s
+%s%s%s
 
 %s
 

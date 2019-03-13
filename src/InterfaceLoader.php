@@ -9,8 +9,21 @@
 namespace FirstW\Export;
 
 
-class InterfaceLoader
+use FirstW\Export\Inner\ConstLoader;
+use FirstW\Export\Inner\MethodLoader;
+use FirstW\Export\Inner\PropertyLoader;
+class InterfaceLoader extends Loader
 {
+
+
+    private $class_template = <<<tem
+interface %s %s
+{
+%s%s
+%s
+
+}
+tem;
 
     /**
      * @var \ReflectionClass
@@ -22,8 +35,69 @@ class InterfaceLoader
         $this->reflectionClass = $reflectionClass;
     }
 
-    public function dump(string $path)
+    /**
+     * @param string $path
+     * @return bool
+     * @throws \Exception
+     */
+    public function dump($path)
     {
-        //todo;
+        $handle = fopen($path.$this->reflectionClass->getShortName().'.php', 'w');
+        if (!is_resource($handle)){
+            throw new \Exception('can\'t open this file');
+        }
+        fwrite($handle, $this->startPHPFile());
+        fwrite($handle, $this->handleNamespace());
+        $dependency = $this->handleDependency();
+        fwrite($handle, sprintf($this->class_template, $this->reflectionClass->getShortName(), $dependency, ConstLoader::dump($this->reflectionClass), PropertyLoader::dump($this->reflectionClass), MethodLoader::dump($this->reflectionClass)));
+        return fclose($handle);
     }
+
+    protected function handleNamespace()
+    {
+        $namespace = $this->reflectionClass->getNamespaceName();
+        if ($namespace !== ''){
+            return "\nnamespace {$namespace};\n";
+        }else{
+            return $namespace;
+        }
+    }
+
+    protected function handleDependency()
+    {
+        $interfaces = $this->reflectionClass->getInterfaces();
+        $inters = $this->reflectionClass->getInterfaceNames();
+        $parentInterfaces = [];
+        foreach ($interfaces as $interface){
+            $parentInterfaces = $parentInterfaces + $this->getAllInterface($interface);
+        }
+        $inters = array_diff($inters, $parentInterfaces);
+        $result = '';
+        if (count($inters) > 0){
+            $result .= ' extends ';
+            foreach ($inters as $inter){
+                $result .= '\\'.$inter.', ';
+            }
+        }
+        return rtrim($result, ', ');
+    }
+
+    /**
+     * @param \ReflectionClass $reflectionClass
+     * @return string[]
+     */
+    private function getAllInterface(\ReflectionClass $reflectionClass)
+    {
+        $parent = $reflectionClass->getInterfaces();
+        if (count($parent) === 0){
+            return [$reflectionClass->getName()];
+        }else{
+            $result = [];
+            foreach ($parent as $item) {
+                $result += $this->getAllInterface($item);
+            }
+        }
+        return $result;
+    }
+
 }
