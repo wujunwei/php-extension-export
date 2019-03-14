@@ -7,9 +7,8 @@
  */
 
 require "../vendor/autoload.php";
-
 try {
-    FirstW\Export\Extension::dump('mongodb', './pdo/');
+    FirstW\Export\Extension::dump('rar', './pdo/');
 } catch (Exception $e) {
     echo 'fail:'.$e->getMessage();
 }
