@@ -41,6 +41,13 @@ tem;
      */
     public function dump($path)
     {
+        $paths = explode('\\', $this->reflectionClass->getNamespaceName());
+        foreach ($paths as $value){
+            $path .= $value.'/';
+            if (!file_exists($path)){
+                mkdir($path);
+            }
+        }
         $handle = fopen($path.$this->reflectionClass->getShortName().'.php', 'w');
         if (!is_resource($handle)){
             throw new \Exception('can\'t open this file');
